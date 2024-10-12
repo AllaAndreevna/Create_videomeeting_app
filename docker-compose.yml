@@ -6,3 +6,6 @@ services:
       - "8080:8080"
     environment:
       - NAME=World
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    command: bash -c "xhost + && python create_video_meeting_screen.py"
