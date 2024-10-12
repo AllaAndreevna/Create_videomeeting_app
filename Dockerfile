@@ -1,19 +1,20 @@
 FROM python:3.9-slim
 
+# еобходимые зависимости
+RUN apt-get update && apt-get install -y \
+    python3-opencv \
+    python3-tk \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# рабочая директория
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y libgl1
+# Копируем файлы приложения в контейнер
+COPY . .
 
-RUN pip install --no-cache-dir numpy==1.22.3
+# Устанавливаем зависимости Python
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --no-cache-dir opencv-python --force-reinstall
-
-COPY . /app
-
-RUN pip install -r requirements.txt
-
-EXPOSE 8080
-
-ENV NAME=World
-
-CMD ["python", "video_meeting_screen.py"]
+# запуск приложения
+CMD ["python", "create_video_meeting_screen.py"]
