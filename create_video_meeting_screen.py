@@ -3,6 +3,7 @@ import numpy as np
 import tkinter as tk
 from tkinter import filedialog
 import textwrap 
+# from create_video_meeting_screen import create_video_meeting_screen
 
 def create_video_meeting_screen(background_image, video1, video2, name1, name2, layout):
      # Load background image
@@ -30,7 +31,6 @@ def create_video_meeting_screen(background_image, video1, video2, name1, name2, 
     root = tk.Tk()
     root.title("Video Meeting Screen")
     root.protocol("WM_DELETE_WINDOW", on_closing)
-
     while True:
         ret1, frame1 = cap1.read()
         ret2, frame2 = cap2.read()
@@ -46,9 +46,8 @@ def create_video_meeting_screen(background_image, video1, video2, name1, name2, 
         dim = (width, height)
         frame2 = cv2.resize(frame2, dim, interpolation=cv2.INTER_AREA)
 
-       
         frame = np.zeros((background.shape[0], background.shape[1], 3), dtype=np.uint8)
-   
+
         layout = layout_var.get()
         if layout == "center":
             x1 = (background.shape[1] - frame1.shape[1]) // 2 - frame2.shape[1] // 2
@@ -65,34 +64,6 @@ def create_video_meeting_screen(background_image, video1, video2, name1, name2, 
             y1 = 0
             x2 = background.shape[1] - frame2.shape[1]
             y2 = 0
-        elif layout == "bottom_left":
-            x1 = 0
-            y1 = background.shape[0] - frame1.shape[0] - 50
-            x2 = frame1.shape[1]
-            y2 = background.shape[0] - frame2.shape[0] - 50
-        elif layout == "bottom_right":
-            x1 = background.shape[1] - frame1.shape[1]
-            y1 = background.shape[0] - frame1.shape[0] - 50
-            x2 = background.shape[1] - frame2.shape[1]
-            y2 = background.shape[0] - frame2.shape[0] - 50
-        elif layout == "left_side":
-            x1 = 0
-            y1 = (background.shape[0] - frame1.shape[0]) // 2
-            x2 = 0
-            y2 = (background.shape[0] - frame2.shape[0]) // 2 + frame1.shape[0]
-        elif layout == "right_side":
-            x1 = background.shape[1] - frame1.shape[1]
-            y1 = (background.shape[0] - frame1.shape[0]) // 2
-            x2 = background.shape[1] - frame2.shape[1]
-            y2 = (background.shape[0] - frame2.shape[0]) // 2 + frame1.shape[0]
-        # x1 = (background.shape[1] - frame1.shape[1]) // 2 - frame2.shape[1] // 2
-        # y1 = (background.shape[0] - frame1.shape[0]) // 2
-        # frame[y1:y1+frame1.shape[0], x1:x1+frame1.shape[1]] = frame1
-
-        # x2 = (background.shape[1] - frame2.shape[1]) // 2 + frame1.shape[1] // 2
-        # y2 = (background.shape[0] - frame2.shape[0]) // 2
-        # frame[y2:y2+frame2.shape[0], x2:x2+frame2.shape[1]] = frame2
-
 
         result = background.copy()
         result[y1:y1+frame1.shape[0], x1:x1+frame1.shape[1]] = frame1
@@ -103,47 +74,101 @@ def create_video_meeting_screen(background_image, video1, video2, name1, name2, 
         rect_width = text_width + 2 * margin
         rect_height = text_height + 2 * margin
 
-        if text_width > frame1.shape[1]:
-            # Split the text into multiple lines
-            lines = textwrap.wrap(name1, width=10)  # adjust the width parameter as needed
-            y_offset = 0
-            for line in lines:
-                (line_width, line_height), _ = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, 10.0, 2)
-                rect_width = line_width + 2 * margin
-                rect_height = line_height + 2 * margin
-                cv2.rectangle(result, (x1 - margin, y1 + y_offset - rect_height + margin + 1520), (x1 + rect_width, y1 + y_offset + 1520), (255, 255, 255), -1, cv2.LINE_AA)
-                cv2.putText(result, line, (x1, y1 + y_offset + 1520), cv2.FONT_HERSHEY_SIMPLEX, 10.0, (0, 0, 0), 2)
-                y_offset += line_height + 2 * margin
-        else:
-            cv2.rectangle(result, (x1 - margin, y1 + 1520 - rect_height + margin), (x1 + rect_width, y1 + 1520), (255, 255, 255), -1, cv2.LINE_AA)
-            cv2.putText(result, name1, (x1, y1 + 1520), cv2.FONT_HERSHEY_SIMPLEX, 10.0, (0, 0, 0), 6)
+        cv2.rectangle(result, (x1 - margin, y1 + frame1.shape[0] + margin), (x1 + rect_width, y1 + frame1.shape[0] + rect_height + margin), (255, 255, 255), -1, cv2.LINE_AA)
+        cv2.putText(result, name1, (x1, y1 + rect_height + frame2.shape[0] + margin), cv2.FONT_HERSHEY_SIMPLEX, 10.0, (0, 0, 0), 6)
 
         (text_width, text_height), _ = cv2.getTextSize(name2, cv2.FONT_HERSHEY_SIMPLEX, 10.0, 2)
+        margin = 10
         rect_width = text_width + 2 * margin
         rect_height = text_height + 2 * margin
 
-        if text_width > frame2.shape[1]:
-            # Split the text into multiple lines
-            lines = textwrap.wrap(name2, width=10)  # adjust the width parameter as needed
-            y_offset = 0
-            for line in lines:
-                (line_width, line_height), _ = cv2.getTextSize(line, cv2.FONT_HERSHEY_SIMPLEX, 10.0, 2)
-                rect_width = line_width + 2 * margin
-                rect_height = line_height + 2 * margin
-                cv2.rectangle(result, (x2 - margin, y2 + y_offset - rect_height + margin + 1520), (x2 + rect_width, y2 + y_offset + 1520), (255, 255, 255), -1, cv2.LINE_AA)
-                cv2.putText(result, line, (x2, y2 + y_offset + 1520), cv2.FONT_HERSHEY_SIMPLEX, 10.0, (0, 0, 0), 2)
-                y_offset += line_height + 2 * margin
-        else:
-
-            cv2.rectangle(result, (x2 - margin, y2 + 1520 - rect_height + margin), (x2 + rect_width, y2 + 1520), (255, 255, 255), -1, cv2.LINE_AA)
-            cv2.putText(result, name2, (x2, y2 + 1520), cv2.FONT_HERSHEY_SIMPLEX, 10.0, (0, 0, 0), 6)
+        cv2.rectangle(result, (x2 - margin, y2 + frame2.shape[0] + margin), (x2 + rect_width, y2 + frame2.shape[0] + rect_height + margin), (255, 255, 255), -1, cv2.LINE_AA)
+        cv2.putText (result, name2, (x2, y2 + rect_height + frame2.shape[0] + margin), cv2.FONT_HERSHEY_SIMPLEX, 10.0, (0, 0, 0), 6)
 
         cv2.imshow("Video Meeting Screen", result)
-      
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
 
 
     cv2.destroyAllWindows()
     cap1.release()
     cap2.release()
+
+def select_files():
+    # Select background image
+    background_image = filedialog.askopenfilename(title="Select background image", filetypes=[("Image Files", ".jpg .jpeg .png")])
+    
+    # Select videos
+    video1 = filedialog.askopenfilename(title="Select first video", filetypes=[("Video Files", ".mp4 .avi .mov")])
+    video2 = filedialog.askopenfilename(title="Select second video", filetypes=[("Video Files", ".mp4 .avi .mov")])
+
+    # Input names
+    name1 = input_name1.get()
+    name2 = input_name2.get()
+
+    # Create video meeting screen
+    create_video_meeting_screen(background_image, video1, video2, name1, name2, layout_var.get())
+
+
+
+# Create window
+root = tk.Tk()
+root.title("Создание видеоконференции")
+root.geometry("1000x600")
+
+# Create a frame for the title
+title_frame = tk.Frame(root)
+title_frame.pack(pady=20)
+
+# Create a label for the title
+title_label = tk.Label(title_frame, text="Создание видеоконференции", font=("Arial", 24))
+title_label.pack()
+
+# Create a frame for the input fields
+input_frame = tk.Frame(root)
+input_frame.pack(pady=20)
+
+# Create labels and input fields for the speaker names
+speaker_label = tk.Label(input_frame, text="Запишите имена спикеров:", font=("Arial", 18))
+speaker_label.pack()
+
+input_name1_label = tk.Label(input_frame, text="Спикер 1:", font=("Arial", 16))
+input_name1_label.pack()
+input_name1 = tk.Entry(input_frame, font=("Arial", 16))
+input_name1.pack()
+
+input_name2_label = tk.Label(input_frame, text="Спикер 2:", font=("Arial", 16))
+input_name2_label.pack()
+input_name2 = tk.Entry(input_frame, font=("Arial", 16))
+input_name2.pack()
+
+# Create a frame for the layout options
+layout_frame = tk.Frame(root)
+layout_frame.pack(pady=20)
+
+# Create a label for the layout options
+layout_label = tk.Label(layout_frame, text="Выберите расположение видео:", font=("Arial", 18))
+layout_label.pack()
+
+# Create a variable for the layout option
+layout_var = tk.StringVar()
+layout_var.set("center")
+
+# Create radio buttons for the layout options
+layout_center = tk.Radiobutton(layout_frame, text="Центр", variable=layout_var, value="center", font=("Arial", 16))
+layout_center.pack(side=tk.LEFT)
+layout_top_left = tk.Radiobutton(layout_frame, text="Верхний левый угол", variable=layout_var, value="top_left", font=("Arial", 16))
+layout_top_left.pack(side=tk.LEFT)
+layout_top_right = tk.Radiobutton(layout_frame, text="Верхний правый угол", variable=layout_var, value="top_right", font=("Arial", 16))
+layout_top_right.pack(side=tk.LEFT)
+
+
+
+# Create a button to select files
+button_select_files = tk.Button(root, text="Select files", command=select_files, font=("Arial", 16))
+button_select_files.pack(pady=20)
+
+# Run GUI
+root.mainloop()
